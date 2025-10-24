@@ -48,7 +48,7 @@ public class Date {
             System.out.println("Error: Price cannot be negative. Price remains unchanged.");
         }
 
-        if(isNegative = false) {
+        if(isNegative == false) {
             this.price = price;
         }
     }
@@ -84,3 +84,4 @@ public class Date {
         return "Day " + day + " - Price: " + price + " - " + (isReserved ? "Reserved" : "Available");
     }
 }
+
