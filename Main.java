@@ -1,6 +1,4 @@
 import java.util.ArrayList;
-import java.util.InputMismatchException;
-import java.util.Locale;
 import java.util.Scanner;
 
 /**
@@ -20,7 +18,7 @@ import java.util.Scanner;
  */
 public class Main {
 
-    private static final Scanner SCANNER = new Scanner(System.in).useLocale(Locale.US);
+    private static final Scanner SCANNER = new Scanner(System.in);
     private static final ArrayList<Property> properties = new ArrayList<>();
     private static final ArrayList<ArrayList<Reservation>> reservationsPerProperty = new ArrayList<>();
     private static final double MIN_PRICE = 100.0;
