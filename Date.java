@@ -40,11 +40,16 @@ public class Date {
      * Updates the price for this date only if it is non-negative.
      * @param price the new price to set (must be >= 0)
      */
-    public void setPrice(double price) {
-        if (price >= 0) {
-            this.price = price;
-        } else {
+   public void setPrice(double price) {
+        boolean isNegative = false;
+
+        if (price < 0) {
+            isNegative = true;
             System.out.println("Error: Price cannot be negative. Price remains unchanged.");
+        }
+
+        if(isNegative == false) {
+            this.price = price;
         }
     }
 
@@ -79,5 +84,6 @@ public class Date {
         return "Day " + day + " - Price: " + price + " - " + (isReserved ? "Reserved" : "Available");
     }
 }
+
 
 
