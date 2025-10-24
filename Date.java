@@ -43,7 +43,7 @@ public class Date {
    public void setPrice(double price) {
         boolean isNegative = false;
 
-        if (price < 0) {
+        if (price < 100) {
             isNegative = true;
             System.out.println("Error: Price cannot be negative. Price remains unchanged.");
         }

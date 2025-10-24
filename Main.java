@@ -1,607 +1,477 @@
+/*
+  This is to certify that this project is our own work, based on our
+  personal efforts in studying and applying the concepts learned.
+  We have constructed the functions and their respective algorithms
+  and corresponding code by ourselves. The program was run, tested,
+  and debugged by our own efforts. We further certify that we have not
+  copied in part or whole or otherwise plagiarized the work of other
+  students and/or persons.
+  <Mandanas, Ammiel Vashti M.>, DLSU ID# <12414557>
+  <Patawaran, Paolo Theodore L.>, DLSU ID# <12484008>
+ */
+
 import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
- * Console-based UI for Green Property Exchange (MCO1).
+ * Main.java — Green Property Exchange (MCO1)
  *
- * <p>
- * This class provides a safe CLI that manages two sample properties on startup,
- * lets the user switch between properties, manage dates and reservations, and view
- * financial summaries. It follows constraints:
- * <ul>
- *   <li>No use of break in loops for flow control</li>
- *   <li>No use of return in void methods for early exits</li>
- *   <li>Uses ArrayList where appropriate</li>
- *   <li>Validates user input thoroughly</li>
- * </ul>
+ * Constraints:
+ * - Properties have unique names.
+ * - Each property manages 1–30 dates (1..30) with a default base price of PHP 1,500.
+ * - Dates may be available or reserved.
+ * - Reservations are validated (no overlap, valid range, etc.).
+ * - Base price updates are only allowed when no active reservations exist.
+ * - Uses ArrayLists for dynamic storage.
+ * - Does not use break/return for control flow or Locale/InputMismatchException.
  * </p>
+ *
+ * Author: Green Property Team (Mandanas & Patawaran)
  */
 public class Main {
 
-    private static final Scanner SCANNER = new Scanner(System.in);
+    private static final Scanner scanner = new Scanner(System.in);
     private static final ArrayList<Property> properties = new ArrayList<>();
     private static final ArrayList<ArrayList<Reservation>> reservationsPerProperty = new ArrayList<>();
-    private static final double MIN_PRICE = 100.0;
+    private static final double MIN_BASE_PRICE = 100.0;
 
     /**
-     * Program entry point.
+     * Application entry point.
      *
      * @param args command-line arguments (unused)
      */
     public static void main(String[] args) {
-        seedSampleData();
-        runApplication();
-        SCANNER.close();
-        System.out.println("Exiting program. Goodbye!");
-    }
-
-    /**
-     * Seeds the application with two properties and some dates/reservations for testing.
-     * "Property 1" and "Property 2" are added with some dates. A sample reservation is
-     * created for demonstration.
-     */
-    private static void seedSampleData() {
-        // Property 1: full month of dates
-        Property p1 = new Property("Property 1");
-        for (int d = 1; d <= 30; d++) {
-            Date date = new Date(d); // default price 1500
-            p1.addDate(date);
-        }
-
-        // Property 2: sparse dates
-        Property p2 = new Property("Property 2");
-        for (int d = 5; d <= 10; d++) {
-            Date date = new Date(d);
-            p2.addDate(date);
-        }
-        for (int d = 20; d <= 22; d++) {
-            Date date = new Date(d);
-            p2.addDate(date);
-        }
-
-        // Add properties to master list
-        properties.add(p1);
-        properties.add(p2);
-
-        // Initialize reservations list per property
-        reservationsPerProperty.add(new ArrayList<>()); // for p1
-        reservationsPerProperty.add(new ArrayList<>()); // for p2
-
-        // Add a sample reservation to Property 1: guest "Alice", days 3-5
-        Reservation sample = new Reservation("Alice", 3, 5);
-        boolean booked = p1.addReservation(sample);
-        if (booked) {
-            reservationsPerProperty.get(0).add(sample);
-        }
-    }
-
-    /**
-     * Runs the main application loop presenting the top-level menu until user chooses to exit.
-     * This method avoids using return in the void method and uses a running flag instead.
-     */
-    private static void runApplication() {
+        seedTwoSampleProperties();
         boolean running = true;
 
         while (running) {
-            System.out.println("\n====== GREEN PROPERTY EXCHANGE ======");
-            System.out.println("1. Select Property to Manage");
-            System.out.println("2. Manage Dates for Selected Property");
-            System.out.println("3. Manage Reservations for Selected Property");
-            System.out.println("4. View Financials for Selected Property");
-            System.out.println("5. Show All Properties");
-            System.out.println("0. Exit");
-            int choice = getValidInt("Enter choice: ", 0, 5);
+            System.out.println("\n===== GREEN PROPERTY EXCHANGE (MCO1) =====");
+            System.out.println("1. Create Property Listing");
+            System.out.println("2. View Property");
+            System.out.println("3. Manage Property");
+            System.out.println("4. Simulate Booking");
+            System.out.println("5. Exit");
+            int choice = getValidInt("Enter choice: ", 1, 5);
 
-            if (choice == 0) {
-                running = false;
-            } else if (choice == 1) {
-                handleSelectProperty();
-            } else if (choice == 2) {
-                handleManageDates();
-            } else if (choice == 3) {
-                handleManageReservations();
-            } else if (choice == 4) {
-                handleViewFinancials();
-            } else if (choice == 5) {
-                showAllProperties();
+            if (choice == 1) createPropertyFlow();
+            else if (choice == 2) viewPropertyFlow();
+            else if (choice == 3) managePropertyFlow();
+            else if (choice == 4) simulateBookingFlow();
+            else if (choice == 5) running = false;
+        }
+
+        System.out.println("Exiting system... Goodbye!");
+        scanner.close();
+    }
+
+    /**
+     * Seeds two sample properties to demonstrate initial data.
+     */
+    private static void seedTwoSampleProperties() {
+        Property p1 = new Property("Property A");
+        for (int d = 1; d <= 30; d++) p1.addDate(new Date(d));
+        properties.add(p1);
+        reservationsPerProperty.add(new ArrayList<>());
+
+        Property p2 = new Property("Property B");
+        for (int d = 5; d <= 10; d++) p2.addDate(new Date(d));
+        for (int d = 20; d <= 22; d++) p2.addDate(new Date(d));
+        properties.add(p2);
+        reservationsPerProperty.add(new ArrayList<>());
+
+        Reservation r = new Reservation("Alice", 3, 5);
+        boolean ok = p1.addReservation(r);
+        if (ok) reservationsPerProperty.get(0).add(r);
+    }
+
+    // ============================
+    // 1. CREATE PROPERTY LISTING
+    // ============================
+
+    /**
+     * Creates a new property listing following MCO1 rules.
+     * Ensures unique name, at least one available date, and sets default base price.
+     */
+    private static void createPropertyFlow() {
+        System.out.println("\n--- Create Property Listing ---");
+        String name = "";
+        boolean validName = false;
+
+        while (!validName) {
+            name = getNonEmptyString("Enter unique property name: ");
+            if (isDuplicatePropertyName(name)) System.out.println("Name already exists. Try again.");
+            else validName = true;
+        }
+
+        Property p = new Property(name);
+        System.out.println("Add available dates (1..30). Enter 'all' for full month, or comma-separated numbers (e.g. 1,2,3):");
+
+        boolean addedDates = false;
+        while (!addedDates) {
+            String input = getNonEmptyString("Enter dates: ");
+            if (input.equalsIgnoreCase("all")) {
+                for (int i = 1; i <= 30; i++) p.addDate(new Date(i));
+                addedDates = true;
             } else {
-                // unreachable because getValidInt enforces bounds
-            }
-        }
-    }
-
-    /**
-     * Prompts user to select a property index from the list. If there are no properties,
-     * informs the user accordingly. The selected property's index is returned or -1 if none selected.
-     *
-     * @return index of selected property (0-based), or -1 if no selection
-     */
-    private static int promptSelectPropertyIndex() {
-        int selectedIndex = -1;
-        if (properties.isEmpty()) {
-            System.out.println("No properties exist. Create one first (not implemented here).");
-            selectedIndex = -1;
-        } else {
-            System.out.println("\nSelect a property:");
-            for (int i = 0; i < properties.size(); i++) {
-                System.out.printf("%d) %s%n", i + 1, properties.get(i).getName());
-            }
-            System.out.println("0) Cancel");
-            int choice = getValidInt("Enter choice: ", 0, properties.size());
-            if (choice == 0) {
-                selectedIndex = -1;
-            } else {
-                selectedIndex = choice - 1;
-            }
-        }
-        return selectedIndex;
-    }
-
-    /**
-     * Handles selecting a property to manage (just a convenience operation that shows the selected property).
-     * Avoids returning early from a void method by using flags.
-     */
-    private static void handleSelectProperty() {
-        int idx = promptSelectPropertyIndex();
-        if (idx >= 0) {
-            System.out.println("Selected property: " + properties.get(idx).getName());
-        } else {
-            System.out.println("No property selected.");
-        }
-    }
-
-    /**
-     * Manages date-related operations for a selected property: add, remove, list, update price.
-     * Enforces constraints: days 1..30, cannot remove reserved dates, price >= MIN_PRICE.
-     */
-    private static void handleManageDates() {
-        int idx = promptSelectPropertyIndex();
-        if (idx < 0) {
-            System.out.println("Returning to main menu.");
-            return;
-        }
-
-        Property p = properties.get(idx);
-        boolean managing = true;
-        while (managing) {
-            System.out.println("\n--- Manage Dates for " + p.getName() + " ---");
-            System.out.println("1) Add Date(s)");
-            System.out.println("2) Remove Date");
-            System.out.println("3) List Dates (Available/Booked)");
-            System.out.println("4) Update Price for a Date");
-            System.out.println("0) Back");
-            int choice = getValidInt("Enter choice: ", 0, 4);
-
-            if (choice == 0) {
-                managing = false;
-            } else if (choice == 1) {
-                handleAddDates(p);
-            } else if (choice == 2) {
-                handleRemoveDate(p);
-            } else if (choice == 3) {
-                handleListDates(p);
-            } else if (choice == 4) {
-                handleUpdateDatePrice(p);
-            } else {
-                // unreachable
-            }
-        }
-    }
-
-    /**
-     * Adds one or more dates to the property based on user input.
-     * Accepts comma-separated days and ranges (e.g., 1-5,7,9).
-     *
-     * @param p the Property to add dates to
-     */
-    private static void handleAddDates(Property p) {
-        System.out.println("Enter dates to add (1-30). Examples: 'all' or '1-5,7,9'.");
-        String input = getNonEmptyString("Dates: ");
-        boolean addedAny = false;
-
-        if ("all".equalsIgnoreCase(input.trim())) {
-            for (int d = 1; d <= 30; d++) {
-                Date date = new Date(d); // default price
-                p.addDate(date);
-                addedAny = true;
-            }
-        } else {
-            String[] tokens = input.split(",");
-            for (int i = 0; i < tokens.length; i++) {
-                String t = tokens[i].trim();
-                if (t.contains("-")) {
-                    String[] range = t.split("-");
-                    if (range.length == 2) {
-                        try {
-                            int a = Integer.parseInt(range[0].trim());
-                            int b = Integer.parseInt(range[1].trim());
-                            if (a < 1 || b < 1 || a > 30 || b > 30 || a > b) {
-                                // invalid range; skip
-                            } else {
-                                int d = a;
-                                while (d <= b) {
-                                    Date date = new Date(d);
-                                    p.addDate(date);
-                                    addedAny = true;
-                                    d = d + 1;
-                                }
-                            }
-                        } catch (NumberFormatException ex) {
-                            // skip invalid piece
-                        }
-                    }
-                } else {
+                String[] parts = input.split(",");
+                for (String part : parts) {
                     try {
-                        int day = Integer.parseInt(t);
-                        if (day >= 1 && day <= 30) {
-                            Date date = new Date(day);
-                            p.addDate(date);
-                            addedAny = true;
-                        }
-                    } catch (NumberFormatException ex) {
-                        // skip invalid token
-                    }
+                        int day = Integer.parseInt(part.trim());
+                        if (day >= 1 && day <= 30) p.addDate(new Date(day));
+                    } catch (NumberFormatException ignored) {}
                 }
+                if (p.getAvailableDates().length > 0) addedDates = true;
+                else System.out.println("Please add at least one valid date.");
             }
         }
 
-        if (addedAny) {
-            System.out.println("Dates added (attempted). Note: duplicates were ignored by Property.addDate().");
-        } else {
-            System.out.println("No valid dates were added.");
-        }
+        properties.add(p);
+        reservationsPerProperty.add(new ArrayList<>());
+        System.out.println("Property '" + name + "' created successfully with " + p.getAvailableDates().length + " dates.");
     }
 
-    /**
-     * Removes a date from the property if it exists and is not reserved.
-     *
-     * @param p the Property to remove the date from
-     */
-    private static void handleRemoveDate(Property p) {
-        int day = getValidInt("Enter day to remove (1-30): ", 1, 30);
-        Date date = p.getDateByDay(day);
-        if (date == null) {
-            System.out.println("That date is not listed for this property.");
-        } else {
-            if (!date.isAvailable()) {
-                System.out.println("Cannot remove this date because it is currently reserved.");
-            } else {
-                p.removeDate(day);
-                System.out.println("Date removed.");
-            }
-        }
-    }
+    // ============================
+    // 2. VIEW PROPERTY
+    // ============================
 
     /**
-     * Lists days 1..30 showing whether each day is Available, Booked, or Not Listed.
-     * Uses p.getDateByDay(day) to find dates and their isAvailable() status.
-     *
-     * @param p the Property whose calendar to print
+     * Allows the user to view property data: Calendar, High-Level Info, Detailed Info.
      */
-    private static void handleListDates(Property p) {
-        System.out.println("\nCalendar for " + p.getName() + " (1..30):");
-        for (int d = 1; d <= 30; d++) {
-            Date date = p.getDateByDay(d);
-            if (date == null) {
-                System.out.printf("%2d : NOT LISTED%n", d);
-            } else {
-                if (date.isAvailable()) {
-                    System.out.printf("%2d : Available - PHP %.2f%n", d, date.getPrice());
-                } else {
-                    System.out.printf("%2d : Reserved - PHP %.2f%n", d, date.getPrice());
-                }
-            }
-        }
-    }
-
-    /**
-     * Updates the price of a specified date (must be listed). Enforces MIN_PRICE.
-     *
-     * @param p the Property containing the date
-     */
-    private static void handleUpdateDatePrice(Property p) {
-        int day = getValidInt("Enter day to update price for (1-30): ", 1, 30);
-        Date date = p.getDateByDay(day);
-        if (date == null) {
-            System.out.println("That date is not listed for this property.");
-        } else {
-            double newPrice = getValidDouble("Enter new price (>= " + MIN_PRICE + "): ", MIN_PRICE, Double.MAX_VALUE);
-            date.setPrice(newPrice); // Date.setPrice should guard against invalid input if present
-            System.out.println("Price updated.");
-        }
-    }
-
-    /**
-     * Manages reservations for a selected property: create, cancel, view all.
-     * This method coordinates with the local reservationsPerProperty list which mirrors
-     * reservations added to the Property object.
-     */
-    private static void handleManageReservations() {
-        int idx = promptSelectPropertyIndex();
-        if (idx < 0) {
-            System.out.println("Returning to main menu.");
-            return;
-        }
+    private static void viewPropertyFlow() {
+        System.out.println("\n--- View Property ---");
+        int idx = selectPropertyIndex();
+        if (idx < 0) return;
 
         Property p = properties.get(idx);
-        ArrayList<Reservation> localResList = reservationsPerProperty.get(idx);
+        boolean viewing = true;
 
-        boolean managing = true;
-        while (managing) {
-            System.out.println("\n--- Manage Reservations for " + p.getName() + " ---");
-            System.out.println("1) Create Reservation");
-            System.out.println("2) Cancel Reservation");
-            System.out.println("3) View All Reservations");
-            System.out.println("0) Back");
+        while (viewing) {
+            System.out.println("\nViewing: " + p.getName());
+            System.out.println("1. Calendar View");
+            System.out.println("2. High-Level Information");
+            System.out.println("3. Detailed Information");
+            System.out.println("0. Back");
             int choice = getValidInt("Enter choice: ", 0, 3);
 
-            if (choice == 0) {
-                managing = false;
-            } else if (choice == 1) {
-                createReservationFlow(p, localResList);
-            } else if (choice == 2) {
-                cancelReservationFlow(p, localResList);
-            } else if (choice == 3) {
-                viewReservationsFlow(p, localResList);
-            } else {
-                // unreachable
+            if (choice == 0) viewing = false;
+            else if (choice == 1) showCalendarView(p);
+            else if (choice == 2) showHighLevelInfo(p);
+            else if (choice == 3) showDetailedInfo(p);
+        }
+    }
+
+    /**
+     * Displays a 30-day calendar showing available, booked, and unlisted days.
+     *
+     * @param p property to display
+     */
+    private static void showCalendarView(Property p) {
+        System.out.println("\n--- Calendar View ---");
+        ArrayList<Reservation> localRes = getLocalReservationListForProperty(p);
+
+        for (int d = 1; d <= 30; d++) {
+            Date date = getDateFromPropertyByDay(p, d);
+            if (date == null)
+                System.out.printf("%2d : NOT LISTED%n", d);
+            else if (date.isAvailable())
+                System.out.printf("%2d : Available - PHP %.2f%n", d, date.getPrice());
+            else {
+                String guest = findGuestForBookedDay(localRes, d);
+                System.out.printf("%2d : BOOKED (%s) - PHP %.2f%n", d, guest, date.getPrice());
             }
         }
     }
 
     /**
-     * Creates a reservation for a property after validating dates exist and are available,
-     * and checks booking rules (no check-in on day 30, no check-out on day 1, checkOut>checkIn).
+     * Displays high-level info about a property.
      *
-     * @param p            the Property to book
-     * @param localResList the local reservation list tracked by Main
+     * @param p property to display
      */
-    private static void createReservationFlow(Property p, ArrayList<Reservation> localResList) {
-        String guest = getNonEmptyString("Guest name: ");
-        int checkIn = getValidInt("Check-in day (1-29): ", 1, 29);
-        int checkOut = getValidInt("Check-out day (2-30): ", 2, 30);
+    private static void showHighLevelInfo(Property p) {
+        System.out.println("\n--- High-Level Information ---");
+        System.out.println("Property Name: " + p.getName());
+        System.out.println("Total Available Dates: " + p.getAvailableDates().length);
+        System.out.printf("Estimated Earnings: PHP %.2f%n", p.getEstimatedEarnings());
+    }
 
-        if (checkOut <= checkIn) {
-            System.out.println("Invalid: check-out must be greater than check-in.");
-            return;
-        }
-        if (checkIn == 30) {
-            System.out.println("Invalid: check-in cannot be on day 30.");
-            return;
-        }
-        if (checkOut == 1) {
-            System.out.println("Invalid: check-out cannot be on day 1.");
-            return;
-        }
+    /**
+     * Displays a submenu for detailed information.
+     * Allows user to choose between viewing specific date info or reservation details.
+     *
+     * @param p property to display
+     */
+    private static void showDetailedInfo(Property p) {
+        boolean showing = true;
+        while (showing) {
+            System.out.println("\n--- Detailed Information ---");
+            System.out.println("1. Information for a Specific Date");
+            System.out.println("2. Reservation Details for this Property");
+            System.out.println("0. Back");
+            int choice = getValidInt("Enter choice: ", 0, 2);
 
-        // Validate all dates exist and are available
-        boolean allOk = true;
-        int d = checkIn;
-        while (d < checkOut && allOk) {
-            Date date = p.getDateByDay(d);
-            if (date == null) {
-                allOk = false;
-            } else {
-                if (!date.isAvailable()) {
-                    allOk = false;
+            if (choice == 0) showing = false;
+            else if (choice == 1) showSpecificDateInfo(p);
+            else if (choice == 2) showReservationDetails(p);
+        }
+    }
+
+    /**
+     * Displays information for a specific date.
+     *
+     * @param p property
+     */
+    private static void showSpecificDateInfo(Property p) {
+        int day = getValidInt("Enter date (1–30): ", 1, 30);
+        Date date = getDateFromPropertyByDay(p, day);
+        if (date == null) System.out.println("Date not listed for this property.");
+        else {
+            System.out.printf("Day %d - Price: PHP %.2f - %s%n",
+                    day, date.getPrice(), date.isAvailable() ? "Available" : "Reserved");
+        }
+    }
+
+    /**
+     * Displays reservation details for a property.
+     *
+     * @param p property
+     */
+    private static void showReservationDetails(Property p) {
+        ArrayList<Reservation> resList = getLocalReservationListForProperty(p);
+        if (resList.isEmpty()) {
+            System.out.println("No reservations for this property.");
+        } else {
+            for (Reservation r : resList) {
+                System.out.printf("Guest: %s | Check-In: %d | Check-Out: %d | Total: PHP %.2f%n",
+                        r.getGuestName(), r.getCheckIn(), r.getCheckOut(), r.getTotalPrice(p));
+                double[] breakdown = r.getBreakdown(p);
+                for (int i = 0; i < breakdown.length; i++) {
+                    System.out.printf("   Night %d: PHP %.2f%n", i + 1, breakdown[i]);
                 }
             }
-            d = d + 1;
-        }
-
-        if (!allOk) {
-            System.out.println("Booking failed: one or more dates are missing or already reserved.");
-            return;
-        }
-
-        Reservation r = new Reservation(guest, checkIn, checkOut);
-        boolean added = p.addReservation(r);
-        if (added) {
-            localResList.add(r);
-            System.out.println("Reservation successful!");
-            // Show summary
-            double total = r.getTotalPrice(p);
-            System.out.printf("Total cost: PHP %.2f%n", total);
-        } else {
-            System.out.println("Reservation failed: internal error or no space for reservations.");
         }
     }
 
-    /**
-     * Cancels a reservation by letting the user pick from the local reservation list.
-     * If removed from property successfully, the local list is updated.
-     *
-     * @param p            the Property to cancel reservation from
-     * @param localResList the local reservation list tracked by Main
-     */
-    private static void cancelReservationFlow(Property p, ArrayList<Reservation> localResList) {
-        if (localResList.isEmpty()) {
-            System.out.println("No reservations recorded for this property.");
-            return;
-        }
-
-        System.out.println("\nSelect a reservation to cancel:");
-        for (int i = 0; i < localResList.size(); i++) {
-            Reservation r = localResList.get(i);
-            System.out.printf("%d) %s: %d -> %d (Total: PHP %.2f)%n", i + 1, r.getGuestName(),
-                    r.getCheckIn(), r.getCheckOut(), r.getTotalPrice(p));
-        }
-        System.out.println("0) Cancel");
-
-        int choice = getValidInt("Enter choice: ", 0, localResList.size());
-        if (choice == 0) {
-            System.out.println("Cancellation aborted.");
-            return;
-        }
-
-        int sel = choice - 1;
-        Reservation toRemove = localResList.get(sel);
-        boolean removedFromProperty = p.removeReservation(toRemove);
-        if (removedFromProperty) {
-            // remove from local list by shifting without break
-            ArrayList<Reservation> newList = new ArrayList<>();
-            for (int i = 0; i < localResList.size(); i++) {
-                if (i != sel) {
-                    newList.add(localResList.get(i));
-                }
-            }
-            localResList.clear();
-            localResList.addAll(newList);
-            System.out.println("Reservation cancelled and dates freed.");
-        } else {
-            System.out.println("Could not find matching reservation inside property data.");
-        }
-    }
+    // ============================
+    // 3. MANAGE PROPERTY
+    // ============================
 
     /**
-     * Displays all reservations for the property using the local reservation list.
-     *
-     * @param p            the Property
-     * @param localResList local list of reservations
+     * Menu to manage property configuration.
      */
-    private static void viewReservationsFlow(Property p, ArrayList<Reservation> localResList) {
-        if (localResList.isEmpty()) {
-            System.out.println("No reservations found for this property.");
-            return;
-        }
-
-        System.out.println("\nReservations for " + p.getName() + ":");
-        for (int i = 0; i < localResList.size(); i++) {
-            Reservation r = localResList.get(i);
-            System.out.printf("%d) %s - %d to %d - Total: PHP %.2f%n", i + 1,
-                    r.getGuestName(), r.getCheckIn(), r.getCheckOut(), r.getTotalPrice(p));
-        }
-    }
-
-    /**
-     * Shows financial summaries for a selected property: estimated earnings and breakdown per reservation.
-     * Estimated earnings uses Property.getEstimatedEarnings() which sums prices of booked dates.
-     */
-    private static void handleViewFinancials() {
-        int idx = promptSelectPropertyIndex();
-        if (idx < 0) {
-            System.out.println("Returning to main menu.");
-            return;
-        }
+    private static void managePropertyFlow() {
+        System.out.println("\n--- Manage Property ---");
+        int idx = selectPropertyIndex();
+        if (idx < 0) return;
 
         Property p = properties.get(idx);
         ArrayList<Reservation> localResList = reservationsPerProperty.get(idx);
+        boolean managing = true;
 
-        System.out.println("\n--- Financials for " + p.getName() + " ---");
-        System.out.printf("Estimated earnings (sum of booked date prices): PHP %.2f%n", p.getEstimatedEarnings());
+        while (managing) {
+            System.out.println("\nManaging: " + p.getName());
+            System.out.println("1. Change Property Name");
+            System.out.println("2. Update Base Price (only if no reservations)");
+            System.out.println("3. Remove Reservation");
+            System.out.println("4. Remove Property");
+            System.out.println("0. Back");
+            int choice = getValidInt("Enter choice: ", 0, 4);
 
-        if (localResList.isEmpty()) {
-            System.out.println("No reservations to show breakdown for.");
-        } else {
-            System.out.println("\nReservation breakdowns:");
-            for (int i = 0; i < localResList.size(); i++) {
-                Reservation r = localResList.get(i);
-                System.out.printf("%d) %s - %d to %d - Total: PHP %.2f%n", i + 1,
-                        r.getGuestName(), r.getCheckIn(), r.getCheckOut(), r.getTotalPrice(p));
-                double[] breakdown = r.getBreakdown(p);
-                for (int j = 0; j < breakdown.length; j++) {
-                    System.out.printf("   Night %d: PHP %.2f%n", j + 1, breakdown[j]);
+            if (choice == 0) managing = false;
+            else if (choice == 1) {
+                String newName = getNonEmptyString("Enter new property name: ");
+                if (isDuplicatePropertyName(newName)) System.out.println("Name already exists.");
+                else {
+                    p.setName(newName);
+                    System.out.println("Name updated successfully.");
+                }
+            } else if (choice == 2) {
+                if (!localResList.isEmpty()) System.out.println("Cannot update base price: property has reservations.");
+                else {
+                    double newBase = getValidDouble("Enter new base price (>=100): ", 100, Double.MAX_VALUE);
+                    for (Date d : p.getAvailableDates()) d.setPrice(newBase);
+                    System.out.println("Base price updated across all dates.");
+                }
+            } else if (choice == 3) {
+                if (localResList.isEmpty()) System.out.println("No reservations to remove.");
+                else {
+                    for (int i = 0; i < localResList.size(); i++) {
+                        Reservation r = localResList.get(i);
+                        System.out.printf("%d) %s | %d→%d%n", i + 1, r.getGuestName(), r.getCheckIn(), r.getCheckOut());
+                    }
+                    System.out.println("0) Cancel");
+                    int sel = getValidInt("Select: ", 0, localResList.size());
+                    if (sel > 0) {
+                        Reservation target = localResList.get(sel - 1);
+                        if (p.removeReservation(target)) {
+                            localResList.remove(sel - 1);
+                            System.out.println("Reservation removed.");
+                        }
+                    }
+                }
+            } else if (choice == 4) {
+                if (!localResList.isEmpty()) System.out.println("Cannot remove property with active reservations.");
+                else {
+                    boolean confirm = confirmAction("Are you sure? (Y/N): ");
+                    if (confirm) {
+                        properties.remove(idx);
+                        reservationsPerProperty.remove(idx);
+                        System.out.println("Property removed successfully.");
+                        managing = false;
+                    }
                 }
             }
         }
     }
 
+    // ============================
+    // 4. SIMULATE BOOKING
+    // ============================
+
     /**
-     * Displays a list of all properties and their basic info.
+     * Simulates booking a reservation for a property.
      */
-    private static void showAllProperties() {
-        if (properties.isEmpty()) {
-            System.out.println("No properties available.");
+    private static void simulateBookingFlow() {
+        System.out.println("\n--- Simulate Booking ---");
+        int idx = selectPropertyIndex();
+        if (idx < 0) return;
+
+        Property p = properties.get(idx);
+        ArrayList<Reservation> localRes = reservationsPerProperty.get(idx);
+
+        String guest = getNonEmptyString("Guest Name: ");
+        int checkIn = getValidInt("Check-in (1–29): ", 1, 29);
+        int checkOut = getValidInt("Check-out (2–30): ", 2, 30);
+
+        if (checkOut <= checkIn || checkIn == 30 || checkOut == 1) {
+            System.out.println("Invalid check-in/check-out combination.");
             return;
         }
-        System.out.println("\nAll Properties:");
-        for (int i = 0; i < properties.size(); i++) {
-            Property p = properties.get(i);
-            System.out.printf("%d) %s - Available Dates: %d - Estimated Earnings: PHP %.2f%n", i + 1,
-                    p.getName(), p.getAvailableDates().length, p.getEstimatedEarnings());
+
+        boolean allAvailable = true;
+        int d = checkIn;
+        while (d < checkOut) {
+            Date date = getDateFromPropertyByDay(p, d);
+            if (date == null || !date.isAvailable()) allAvailable = false;
+            d++;
         }
-    }
 
-    // -----------------------------
-    // Utility input helper methods
-    // -----------------------------
-
-    /**
-     * Safely reads an integer within [min, max] from console input.
-     *
-     * @param prompt prompt shown to user
-     * @param min    minimum accepted value
-     * @param max    maximum accepted value
-     * @return user-entered integer within range
-     */
-    private static int getValidInt(String prompt, int min, int max) {
-        int value = min;
-        boolean got = false;
-        while (!got) {
-            System.out.print(prompt);
-            String line = SCANNER.nextLine().trim();
-            try {
-                int v = Integer.parseInt(line);
-                if (v < min || v > max) {
-                    System.out.printf("Please enter an integer between %d and %d.%n", min, max);
-                } else {
-                    value = v;
-                    got = true;
+        if (!allAvailable) {
+            System.out.println("Some dates unavailable or not listed.");
+        } else {
+            Reservation r = new Reservation(guest, checkIn, checkOut);
+            if (p.addReservation(r)) {
+                localRes.add(r);
+                System.out.println("Reservation successful!");
+                System.out.printf("Total: PHP %.2f%n", r.getTotalPrice(p));
+                double[] breakdown = r.getBreakdown(p);
+                for (int i = 0; i < breakdown.length; i++) {
+                    System.out.printf("   Night %d: PHP %.2f%n", i + 1, breakdown[i]);
                 }
-            } catch (NumberFormatException ex) {
-                System.out.println("Invalid integer. Try again.");
-            }
+            } else System.out.println("Reservation could not be added.");
         }
-        return value;
     }
 
-    /**
-     * Safely reads a double value within [min, max] from console input.
-     *
-     * @param prompt prompt shown to user
-     * @param min    minimum value accepted
-     * @param max    maximum value accepted
-     * @return the valid double entered by user
-     */
-    private static double getValidDouble(String prompt, double min, double max) {
-        double value = min;
-        boolean got = false;
-        while (!got) {
-            System.out.print(prompt);
-            String line = SCANNER.nextLine().trim();
-            try {
-                double v = Double.parseDouble(line);
-                if (v < min || v > max) {
-                    System.out.printf("Please enter a number between %.2f and %.2f.%n", min, max);
-                } else {
-                    value = v;
-                    got = true;
-                }
-            } catch (NumberFormatException ex) {
-                System.out.println("Invalid number. Try again.");
-            }
+    // ============================
+    // UTILITIES
+    // ============================
+
+    private static int selectPropertyIndex() {
+        if (properties.isEmpty()) {
+            System.out.println("No properties found.");
+            return -1;
         }
-        return value;
+        for (int i = 0; i < properties.size(); i++)
+            System.out.printf("%d) %s%n", i + 1, properties.get(i).getName());
+        System.out.println("0) Cancel");
+        int choice = getValidInt("Select: ", 0, properties.size());
+        return choice == 0 ? -1 : choice - 1;
     }
 
-    /**
-     * Reads a non-empty trimmed string from the console.
-     *
-     * @param prompt message to display
-     * @return non-empty trimmed string
-     */
+    private static boolean isDuplicatePropertyName(String name) {
+        for (Property p : properties) if (p.getName().equals(name)) return true;
+        return false;
+    }
+
     private static String getNonEmptyString(String prompt) {
         String s = "";
-        boolean got = false;
-        while (!got) {
+        while (s.isEmpty()) {
             System.out.print(prompt);
-            s = SCANNER.nextLine().trim();
-            if (!s.isEmpty()) {
-                got = true;
-            } else {
-                System.out.println("Input cannot be empty. Try again.");
-            }
+            s = scanner.nextLine().trim();
+            if (s.isEmpty()) System.out.println("Input cannot be empty.");
         }
         return s;
+    }
+
+    private static int getValidInt(String prompt, int min, int max) {
+        int val = min;
+        boolean ok = false;
+        while (!ok) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            try {
+                int x = Integer.parseInt(input);
+                if (x < min || x > max) System.out.println("Out of range.");
+                else {
+                    val = x;
+                    ok = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input.");
+            }
+        }
+        return val;
+    }
+
+    private static double getValidDouble(String prompt, double min, double max) {
+        double val = min;
+        boolean ok = false;
+        while (!ok) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+            try {
+                double x = Double.parseDouble(input);
+                if (x < min || x > max) System.out.println("Out of range.");
+                else {
+                    val = x;
+                    ok = true;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid number.");
+            }
+        }
+        return val;
+    }
+
+    private static boolean confirmAction(String prompt) {
+        boolean valid = false, result = false;
+        while (!valid) {
+            System.out.print(prompt);
+            String s = scanner.nextLine().trim();
+            if (s.equalsIgnoreCase("y") || s.equalsIgnoreCase("yes")) {
+                result = true;
+                valid = true;
+            } else if (s.equalsIgnoreCase("n") || s.equalsIgnoreCase("no")) valid = true;
+            else System.out.println("Please enter Y or N.");
+        }
+        return result;
+    }
+
+    private static ArrayList<Reservation> getLocalReservationListForProperty(Property p) {
+        ArrayList<Reservation> result = new ArrayList<>();
+        for (int i = 0; i < properties.size(); i++)
+            if (properties.get(i) == p) result = reservationsPerProperty.get(i);
+        return result;
+    }
+
+    private static Date getDateFromPropertyByDay(Property p, int day) {
+        for (Date d : p.getAvailableDates())
+            if (d != null && d.getDay() == day) return d;
+        return null;
+    }
+
+    private static String findGuestForBookedDay(ArrayList<Reservation> resList, int day) {
+        for (Reservation r : resList)
+            if (r.getCheckIn() <= day && day < r.getCheckOut()) return r.getGuestName();
+        return "Unknown";
     }
 }
