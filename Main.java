@@ -296,7 +296,7 @@ public class Main {
                 else {
                     for (int i = 0; i < localResList.size(); i++) {
                         Reservation r = localResList.get(i);
-                        System.out.printf("%d) %s | %d→%d%n", i + 1, r.getGuestName(), r.getCheckIn(), r.getCheckOut());
+                        System.out.printf("%d) %s | %d-%d%n", i + 1, r.getGuestName(), r.getCheckIn(), r.getCheckOut());
                     }
                     System.out.println("0) Cancel");
                     int sel = getValidInt("Select: ", 0, localResList.size());
