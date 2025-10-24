@@ -1,6 +1,6 @@
 /**
  * The Date class represents a specific day of a month in a property's availability calendar.
- * It stores the day number, the price for that day, and whether it is currently reserved.
+ * It stores the day number, the price for that day,m and whether it is currently reserved.
  */
 
 public class Date {
