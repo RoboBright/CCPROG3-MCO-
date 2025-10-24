@@ -339,8 +339,8 @@ public class Main {
         ArrayList<Reservation> localRes = reservationsPerProperty.get(idx);
 
         String guest = getNonEmptyString("Guest Name: ");
-        int checkIn = getValidInt("Check-in (1–29): ", 1, 29);
-        int checkOut = getValidInt("Check-out (2–30): ", 2, 30);
+        int checkIn = getValidInt("Check-in (1-29): ", 1, 29);
+        int checkOut = getValidInt("Check-out (2-30): ", 2, 30);
 
         if (checkOut <= checkIn || checkIn == 30 || checkOut == 1) {
             System.out.println("Invalid check-in/check-out combination.");
