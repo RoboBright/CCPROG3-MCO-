@@ -1,27 +1,43 @@
 /**
- * Represents a property with a name, available dates, and reservations.
- * Each date has its own pricing (default 1500 in Date class).
-  */
+ * Represents a property with a name, type, available dates, and reservations.
+ * Each date has its own base pricing, environmental rate, and reservation status.
+ */
 public class Property {
 
     private String name;
+    private PropertyType type;
     private Date[] dates;
     private Reservation[] reservations;
 
     /**
      * Constructs a Property with the given name.
-     * Initializes storage for up to 30 dates and 30 reservations.
+     * The default property type is Eco-Apartment.
+     * The property can store up to 30 dates and 30 reservations.
+     *
      * @param name the name of the property
      */
     public Property(String name) {
+        this(name, PropertyType.ECO_APARTMENT);
+    }
+
+    /**
+     * Constructs a Property with a specific name and type.
+     * Initializes storage for up to 30 dates and 30 reservations.
+     *
+     * @param name the name of the property
+     * @param type the property type
+     */
+    public Property(String name, PropertyType type) {
         this.name = name;
+        this.type = type;
         this.dates = new Date[30];
         this.reservations = new Reservation[30];
     }
 
     /**
      * Retrieves the property's name.
-     * @return name of the property
+     *
+     * @return the property name
      */
     public String getName() {
         return name;
@@ -29,57 +45,90 @@ public class Property {
 
     /**
      * Sets a new name for the property.
-     * @param name new name to apply
+     *
+     * @param name the new name to assign
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * Adds a Date to the property's calendar if it does not already exist.
+     * Retrieves the type of this property.
+     *
+     * @return the property type
+     */
+    public PropertyType getType() {
+        return type;
+    }
+
+    /**
+     * Sets the property type.
+     *
+     * @param type the new property type
+     */
+    public void setType(PropertyType type) {
+        if (type != null) {
+            this.type = type;
+        }
+    }
+
+    /**
+     * Adds a Date object to the property's list of available dates.
+     * The date is added only if no duplicate day exists.
+     *
      * @param date the Date to add
      */
     public void addDate(Date date) {
-        boolean canAdd = true;
+        boolean foundDuplicate = false;
+        int i = 0;
 
         if (date != null) {
-            // check if date already exists
-            for (int i = 0; i < dates.length; i++) {
+            while (i < dates.length) {
                 if (dates[i] != null && dates[i].getDay() == date.getDay()) {
-                    canAdd = false;
+                    foundDuplicate = true;
                 }
+                i = i + 1;
             }
 
-            // add to first available slot
-            if (canAdd) {
-                for (int i = 0; i < dates.length; i++) {
-                    if (dates[i] == null) {
-                        dates[i] = date;
-                        i = dates.length;
+            if (!foundDuplicate) {
+                int j = 0;
+                boolean placed = false;
 
+                while (j < dates.length && !placed) {
+                    if (dates[j] == null) {
+                        dates[j] = date;
+                        placed = true;
                     }
+                    j = j + 1;
                 }
             }
         }
     }
 
     /**
-     * Removes a date by its day number if present.
+     * Removes a date by its day number if it exists.
+     *
      * @param day the day to remove
      */
     public void removeDate(int day) {
-        for (int i = 0; i < dates.length; i++) {
+        boolean done = false;
+        int i = 0;
+
+        while (i < dates.length && !done) {
             if (dates[i] != null && dates[i].getDay() == day) {
                 dates[i] = null;
-                i = dates.length;
+                done = true;
             }
+            i = i + 1;
         }
     }
 
     /**
-     * Adds a reservation if all dates from check-in to check-out exist and are available.
+     * Adds a reservation if all requested dates exist and are available.
+     * When added, all corresponding Date objects are marked as reserved.
+     *
      * @param res the reservation to add
-     * @return true if successfully added, false otherwise
+     * @return true if added successfully; false otherwise
      */
     public boolean addReservation(Reservation res) {
         boolean success = false;
@@ -87,143 +136,201 @@ public class Property {
         if (res != null && res.getCheckOut() > res.getCheckIn()) {
 
             boolean allAvailable = true;
+            int day = res.getCheckIn();
 
-            for (int d = res.getCheckIn(); d < res.getCheckOut(); d++) {
+            while (day < res.getCheckOut()) {
                 boolean found = false;
+                int j = 0;
 
-                for (int j = 0; j < dates.length; j++) {
-                    if (dates[j] != null && dates[j].getDay() == d) {
+                while (j < dates.length) {
+                    if (dates[j] != null && dates[j].getDay() == day) {
+                        found = true;
                         if (!dates[j].isAvailable()) {
                             allAvailable = false;
                         }
-                        found = true;
                     }
+                    j = j + 1;
                 }
+
                 if (!found) {
                     allAvailable = false;
                 }
+
+                day = day + 1;
             }
 
             if (allAvailable) {
-                for (int i = 0; i < reservations.length; i++) {
-                    if (!success && reservations[i] == null) {
-                        reservations[i] = res;
+                int k = 0;
 
-                        for (int d = res.getCheckIn(); d < res.getCheckOut(); d++) {
-                            for (int j = 0; j < dates.length; j++) {
-                                if (dates[j] != null && dates[j].getDay() == d) {
-                                    dates[j].book();
+                while (k < reservations.length && !success) {
+                    if (reservations[k] == null) {
+                        reservations[k] = res;
+
+                        int d = res.getCheckIn();
+                        while (d < res.getCheckOut()) {
+                            int m = 0;
+                            while (m < dates.length) {
+                                if (dates[m] != null && dates[m].getDay() == d) {
+                                    dates[m].book();
                                 }
+                                m = m + 1;
                             }
+                            d = d + 1;
                         }
 
                         success = true;
                     }
+                    k = k + 1;
                 }
             }
         }
+
         return success;
     }
 
     /**
-     * Removes a reservation and unbooks its dates.
+     * Removes a reservation and resets the reservation status of its dates.
+     *
      * @param res the reservation to remove
-     * @return true if found and removed, false otherwise
+     * @return true if removed; false otherwise
      */
     public boolean removeReservation(Reservation res) {
         boolean removed = false;
+        int i = 0;
 
         if (res != null) {
-            for (int i = 0; i < reservations.length; i++) {
+            while (i < reservations.length && !removed) {
                 Reservation r = reservations[i];
 
-                if (!removed && r != null &&
+                if (r != null &&
                         r.getGuestName().equals(res.getGuestName()) &&
                         r.getCheckIn() == res.getCheckIn() &&
                         r.getCheckOut() == res.getCheckOut()) {
 
-                    for (int d = r.getCheckIn(); d < r.getCheckOut(); d++) {
-                        for (int j = 0; j < dates.length; j++) {
+                    int d = r.getCheckIn();
+                    while (d < r.getCheckOut()) {
+                        int j = 0;
+                        while (j < dates.length) {
                             if (dates[j] != null && dates[j].getDay() == d) {
                                 dates[j].unbook();
                             }
+                            j = j + 1;
                         }
+                        d = d + 1;
                     }
 
                     reservations[i] = null;
                     removed = true;
                 }
+                i = i + 1;
             }
         }
+
         return removed;
     }
 
     /**
-     * Retrieves all currently available dates.
+     * Retrieves all available (not reserved) dates.
+     *
      * @return an array of available Date objects
      */
     public Date[] getAvailableDates() {
         int count = 0;
+        int i = 0;
+
+        while (i < dates.length) {
+            if (dates[i] != null && dates[i].isAvailable()) {
+                count = count + 1;
+            }
+            i = i + 1;
+        }
+
+        Date[] available = new Date[count];
         int idx = 0;
+        int j = 0;
 
-        for (int i = 0; i < dates.length; i++) {
-            if (dates[i] != null && dates[i].isAvailable()) {
-                count++;
+        while (j < dates.length) {
+            if (dates[j] != null && dates[j].isAvailable()) {
+                available[idx] = dates[j];
+                idx = idx + 1;
             }
+            j = j + 1;
         }
 
-        Date[] availableDates = new Date[count];
-
-        for (int i = 0; i < dates.length; i++) {
-            if (dates[i] != null && dates[i].isAvailable()) {
-                availableDates[idx] = dates[i];
-                idx++;
-            }
-        }
-        return availableDates;
+        return available;
     }
 
     /**
      * Retrieves the Date object for a specific day.
-     * @param day the calendar day to find (1–30)
-     * @return the Date object if it exists, otherwise null
+     *
+     * @param day the day to search for
+     * @return the Date object if found; null otherwise
      */
     public Date getDateByDay(int day) {
         Date found = null;
-        for (int i = 0; i < dates.length; i++) {
+        int i = 0;
+
+        while (i < dates.length) {
             if (dates[i] != null && dates[i].getDay() == day) {
                 found = dates[i];
             }
+            i = i + 1;
         }
+
         return found;
     }
 
     /**
-     * Computes the total earnings from all reserved dates by summing the date price.
-     * @return total earnings from booked dates
+     * Updates the base price for all listed dates.
+     *
+     * @param newBase the new base price to apply
      */
-    public double getEstimatedEarnings() {
-        double sum = 0;
+    public void updateBasePrice(double newBase) {
+        int i = 0;
 
-        for (int i = 0; i < dates.length; i++) {
-            if (dates[i] != null && !dates[i].isAvailable()) {
-                sum = sum + dates[i].getPrice();
+        while (i < dates.length) {
+            if (dates[i] != null) {
+                dates[i].setPrice(newBase);
             }
+            i = i + 1;
         }
-        return sum;
     }
 
     /**
-     * Removes the property only if it has no active reservations.
-     * @return true if removal succeeds, false otherwise
+     * Computes estimated earnings based on all reserved dates.
+     * Final prices include the property type multiplier and environmental rate.
+     *
+     * @return the total earnings
+     */
+    public double getEstimatedEarnings() {
+        double total = 0;
+        double multiplier = type.getMultiplier();
+        int i = 0;
+
+        while (i < dates.length) {
+            if (dates[i] != null && !dates[i].isAvailable()) {
+                total = total + dates[i].getFinalPrice(multiplier);
+            }
+            i = i + 1;
+        }
+
+        return total;
+    }
+
+    /**
+     * Removes this property only if it has no reservations.
+     *
+     * @return true if removed successfully; false otherwise
      */
     public boolean removeProperty() {
         boolean canRemove = true;
+        int i = 0;
 
-        for (int i = 0; i < reservations.length; i++) {
+        while (i < reservations.length) {
             if (reservations[i] != null) {
                 canRemove = false;
             }
+            i = i + 1;
         }
 
         if (canRemove) {

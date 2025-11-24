@@ -1,6 +1,6 @@
 /**
  * Represents a reservation made by a guest.
- * Stores guest name, check-in, and check-out dates.
+ * Stores the guest name, check-in day, and check-out day.
  */
 public class Reservation {
 
@@ -10,6 +10,7 @@ public class Reservation {
 
     /**
      * Constructs a Reservation object.
+     *
      * @param guest the name of the guest making the reservation
      * @param in the check-in day (1–29)
      * @param out the check-out day (2–30, must be greater than check-in)
@@ -22,7 +23,8 @@ public class Reservation {
 
     /**
      * Returns the name of the guest who made the reservation.
-     * @return guest name
+     *
+     * @return the guest name
      */
     public String getGuestName() {
         return guestName;
@@ -30,7 +32,8 @@ public class Reservation {
 
     /**
      * Returns the check-in day.
-     * @return check-in day
+     *
+     * @return the check-in day
      */
     public int getCheckIn() {
         return checkIn;
@@ -38,44 +41,50 @@ public class Reservation {
 
     /**
      * Returns the check-out day.
-     * @return check-out day
+     *
+     * @return the check-out day
      */
     public int getCheckOut() {
         return checkOut;
     }
 
     /**
-     * Calculates total price for this reservation based on actual Date prices
-     * stored in the Property. If any day in the range is missing (i.e., no Date
-     * object exists), the total will become 0 (invalid reservation).
+     * Calculates the total price for this reservation.
+     * The price is computed using each Date's final price, which already
+     * includes the property type multiplier and the environmental rate.
+     * If any date does not exist, the total becomes 0.
      *
-     * @param property the Property whose dates are used for pricing
-     * @return total price of the reservation, or 0 if any date is missing
+     * @param property the property containing the dates
+     * @return the total price of the reservation
      */
     public double getTotalPrice(Property property) {
         double total = 0;
         int day = checkIn;
+        double multiplier = property.getType().getMultiplier();
 
         while (day < checkOut) {
             Date date = property.getDateByDay(day);
 
             if (date != null) {
-                total = total + date.getPrice();
+                total = total + date.getFinalPrice(multiplier);
             } else {
                 total = 0;
                 day = checkOut;
             }
+
             day = day + 1;
         }
+
         return total;
     }
 
     /**
-     * Creates a per-night breakdown of prices for this reservation.
-     * Each element corresponds to one night. If a date is missing, its price is set to 0.
+     * Creates a breakdown of nightly prices for this reservation.
+     * Each price already includes all modifiers.
+     * Missing dates produce a value of 0.
      *
-     * @param property the Property to retrieve individual nightly prices
-     * @return an array of nightly prices
+     * @param property the property to use for price lookup
+     * @return an array containing the nightly prices
      */
     public double[] getBreakdown(Property property) {
         int nights = checkOut - checkIn;
@@ -83,12 +92,13 @@ public class Reservation {
 
         int index = 0;
         int day = checkIn;
+        double multiplier = property.getType().getMultiplier();
 
         while (index < nights) {
             Date date = property.getDateByDay(day);
 
             if (date != null) {
-                breakdown[index] = date.getPrice();
+                breakdown[index] = date.getFinalPrice(multiplier);
             } else {
                 breakdown[index] = 0;
             }
@@ -96,6 +106,7 @@ public class Reservation {
             index = index + 1;
             day = day + 1;
         }
+
         return breakdown;
     }
 }
