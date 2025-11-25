@@ -1,4 +1,11 @@
+package System;
+
 import java.util.ArrayList;
+
+import Objects.Property;
+import Objects.Reservation;
+import Objects.Date;
+import Objects.PropertyType;
 
 /**
  * The PropertySystem class stores all properties and their reservations.

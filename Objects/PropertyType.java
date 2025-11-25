@@ -1,3 +1,6 @@
+package Objects;
+
+
 /**
  * Enumerates the available property types and their price multipliers.
  * Each multiplier affects the final nightly price of a reservation.

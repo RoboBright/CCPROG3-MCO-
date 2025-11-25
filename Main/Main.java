@@ -1,5 +1,14 @@
+package Main;
+
+
+
 import java.util.Scanner;
 
+import Menu.MenuHelper;
+import Menu.PropertyMenuManager;
+import Menu.BookingMenuManager;
+import Menu.CalendarView;
+import System.PropertySystem;
 /**
  * The Main class runs the Green Property Exchange program.
  * It creates the required managers and opens the main menu.

@@ -1,5 +1,14 @@
+package Menu;
+
 import java.util.ArrayList;
 import java.util.Locale;
+
+import Objects.Property;
+import Objects.Date;
+import Objects.Reservation;
+import Objects.PropertyType;
+
+import System.PropertySystem;
 
 /**
  * The PropertyMenuManager class handles property-related menu actions.

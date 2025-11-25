@@ -1,4 +1,9 @@
+package Menu;
+
 import java.util.Locale;
+
+import Objects.Property;
+import Objects.Date;
 
 /**
  * Generates a grid-style calendar view for a property.

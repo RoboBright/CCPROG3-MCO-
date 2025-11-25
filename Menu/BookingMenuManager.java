@@ -1,5 +1,12 @@
+package Menu;
+
 import java.util.ArrayList;
 import java.util.Locale;
+
+import Objects.Property;
+import Objects.Reservation;
+
+import System.PropertySystem;
 
 /**
  * The BookingMenuManager class handles all reservation and booking menu actions.
