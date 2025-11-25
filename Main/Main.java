@@ -27,7 +27,7 @@ public class Main {
         // Core logic layer
         PropertySystem system = new PropertySystem();
 
-        // Helpers and managers
+        // Helpers and managerss
         MenuHelper helper = new MenuHelper(scanner);
         CalendarView calendarView = new CalendarView();
         PropertyMenuManager propertyMenu = new PropertyMenuManager(system, helper, calendarView);
