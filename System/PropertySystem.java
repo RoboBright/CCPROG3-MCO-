@@ -432,4 +432,36 @@ public class PropertySystem {
             }
         }
     }
+
+    /**
+     * Sets the environmental rate for a range of days.
+     *
+     * @param index the property index
+     * @param start the starting day (1–30)
+     * @param end the ending day (1–30)
+     * @param rate the environmental rate (0.80–1.20)
+     * @return true if all days were updated
+     */
+    public boolean setEnvironmentalRateForRange(int index, int start, int end, double rate) {
+
+        if (index < 0 || index >= properties.size())
+            return false;
+
+        if (start < 1 || end > 30 || start > end)
+            return false;
+
+        Property p = properties.get(index);
+
+        int d = start;
+        while (d <= end) {
+            Date date = p.getDateByDay(d);
+            if (date != null)
+                date.setEnvironmentalRate(rate);
+            d = d + 1;
+        }
+
+        return true;
+    }
 }
+
+

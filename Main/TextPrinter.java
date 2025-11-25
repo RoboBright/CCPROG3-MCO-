@@ -1,3 +1,9 @@
+package Main;
+
+import Menu.MenuHelper;
+import Menu.PropertyMenuManager;
+import Menu.BookingMenuManager;
+
 
 public class TextPrinter {
     public static void initProgram(boolean running, MenuHelper helper, PropertyMenuManager propertyMenu, BookingMenuManager bookingMenu){

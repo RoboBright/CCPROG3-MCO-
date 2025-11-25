@@ -399,7 +399,8 @@ public class PropertyMenuManager {
             System.out.println("\n--- Environmental Rates ---");
             System.out.println("1. Set rate for a day");
             System.out.println("2. Set rate for all days");
-            System.out.println("3. Randomize all rates");
+            System.out.println("3. Set rate for a range of days");
+            System.out.println("4. Randomize all rates");
             System.out.println("0. Back");
 
             int choice = helper.getValidInt("Enter choice: ", 0, 3);
@@ -411,6 +412,8 @@ public class PropertyMenuManager {
             else if (choice == 2)
                 setRateAll(index);
             else if (choice == 3)
+                setRateRange(index);
+            else if (choice == 4)
                 randomizeRates(index);
         }
     }
@@ -489,4 +492,48 @@ public class PropertyMenuManager {
         int choice = helper.getValidInt("Enter choice: ", 1, 4);
         return PropertyType.fromChoice(choice);
     }
+    /**
+     * Sets the environmental rate for a range of days.
+     *
+     * The user may enter input like:
+     *   6-11
+     *   12-15
+     *
+     * @param index the property index
+     */
+    private void setRateRange(int index) {
+
+        String input = helper.getNonEmptyString("Enter range (ex: 6-11): ");
+
+        int dash = input.indexOf('-');
+
+        if (dash == -1) {
+            System.out.println("Invalid format. Use start-end, like 6-11.");
+            return;
+        }
+
+        try {
+            int start = Integer.parseInt(input.substring(0, dash).trim());
+            int end   = Integer.parseInt(input.substring(dash + 1).trim());
+
+            if (start < 1 || end > 30 || start > end) {
+                System.out.println("Invalid day range.");
+                return;
+            }
+
+            double rate = helper.getValidDouble("Rate (0.80–1.20): ", 0.80, 1.20);
+
+            boolean ok = system.setEnvironmentalRateForRange(index, start, end, rate);
+
+            if (ok)
+                System.out.println("Updated rate for days " + start + " to " + end + ".");
+            else
+                System.out.println("Unable to update rate for range.");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid range. Use numbers only.");
+        }
+    }
+
 }
+
