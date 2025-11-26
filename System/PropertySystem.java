@@ -67,7 +67,7 @@ public class PropertySystem {
         Reservation r3 = new Reservation("Johnny SilverHand", 11, 13);
         Reservation r4 = new Reservation("Adam Smasher", 15, 20);
         Reservation r5 = new Reservation("Han Helldiver", 7, 14);
-        Reservation r6 = new Reservation("Master Chief", 12, 18);
+        Reservation r6 = new Reservation("Master Chief", 1, 3);
         Reservation r7 = new Reservation("Fireful FlyShine", 19, 24);
 
 
