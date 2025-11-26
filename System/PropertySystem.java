@@ -29,35 +29,68 @@ public class PropertySystem {
      * Creates two sample properties for demonstration and testing.
      */
     private void seedSampleProperties() {
-        Property p1 = new Property("Property A", PropertyType.ECO_APARTMENT);
-        int d = 1;
-        while (d <= 30) {
-            p1.addDate(new Date(d));
-            d = d + 1;
-        }
+        Property p1 = new Property("Grand Residences", PropertyType.ECO_APARTMENT);
+        for (int d = 1; d <= 30; d++) p1.addDate(new Date(d));
         properties.add(p1);
         reservationsPerProperty.add(new ArrayList<Reservation>());
 
-        Property p2 = new Property("Property B", PropertyType.SUSTAINABLE_HOUSE);
-        int day = 5;
-        while (day <= 10) {
-            p2.addDate(new Date(day));
-            day = day + 1;
-        }
-        day = 20;
-        while (day <= 22) {
-            p2.addDate(new Date(day));
-            day = day + 1;
-        }
+
+        Property p2 = new Property("Arasaka Tower", PropertyType.SUSTAINABLE_HOUSE);
+        for (int d = 1; d <= 15; d++) p2.addDate(new Date(d));
+        for (int d = 21; d <= 25; d++) p2.addDate(new Date(d));
         properties.add(p2);
         reservationsPerProperty.add(new ArrayList<Reservation>());
 
-        Reservation sample = new Reservation("Alice", 3, 5);
-        boolean ok = p1.addReservation(sample);
 
-        if (ok) {
-            reservationsPerProperty.get(0).add(sample);
-        }
+        Property p3 = new Property("Bolinao Reservations", PropertyType.GREEN_RESORT);
+        for (int d = 10; d <= 20; d++) p3.addDate(new Date(d));
+        properties.add(p3);
+        reservationsPerProperty.add(new ArrayList<Reservation>());
+
+
+        Property p4 = new Property("Sunset Retreat", PropertyType.ECO_GLAMPING);
+        for (int d = 5; d <= 25; d++) p4.addDate(new Date(d));
+        properties.add(p4);
+        reservationsPerProperty.add(new ArrayList<Reservation>());
+
+
+        Property p5 = new Property("Mountain Edge", PropertyType.SUSTAINABLE_HOUSE);
+        for (int d = 1; d <= 10; d++) p5.addDate(new Date(d));
+        for (int d = 18; d <= 28; d++) p5.addDate(new Date(d));
+        properties.add(p5);
+        reservationsPerProperty.add(new ArrayList<Reservation>());
+
+
+// Bookings
+        Reservation r1 = new Reservation("Paolo", 2, 4);
+        Reservation r2 = new Reservation("Ammiel", 5, 9);
+        Reservation r3 = new Reservation("Johnny SilverHand", 11, 13);
+        Reservation r4 = new Reservation("Adam Smasher", 15, 20);
+        Reservation r5 = new Reservation("Han Helldiver", 7, 14);
+        Reservation r6 = new Reservation("Master Chief", 12, 18);
+        Reservation r7 = new Reservation("Fireful FlyShine", 19, 24);
+
+
+        p1.addReservation(r1); reservationsPerProperty.get(0).add(r1);
+        p1.addReservation(r2); reservationsPerProperty.get(0).add(r2);
+        p2.addReservation(r3); reservationsPerProperty.get(1).add(r3);
+        p3.addReservation(r4); reservationsPerProperty.get(2).add(r4);
+        p4.addReservation(r5); reservationsPerProperty.get(3).add(r5);
+        p5.addReservation(r6); reservationsPerProperty.get(4).add(r6);
+        p5.addReservation(r7); reservationsPerProperty.get(4).add(r7);
+
+
+// Environmental Modifiers
+        setEnvironmentalRateForRange(0, 1, 10, 0.90);
+        setEnvironmentalRateForRange(0, 11, 20, 1.10);
+        setEnvironmentalRateForRange(1, 1, 15, 1.00);
+        setEnvironmentalRateForRange(1, 21, 25, 0.85);
+        setEnvironmentalRateForRange(2, 10, 15, 1.20);
+        setEnvironmentalRateForRange(2, 16, 20, 0.80);
+        setEnvironmentalRateForRange(3, 5, 15, 0.95);
+        setEnvironmentalRateForRange(3, 16, 25, 1.05);
+        setEnvironmentalRateForRange(4, 1, 10, 0.88);
+        setEnvironmentalRateForRange(4, 18, 28, 1.15);
     }
 
     /**
