@@ -6,39 +6,39 @@ import Objects.Property;
 import Objects.Date;
 
 /**
- * Interactive calendar grid panel that displays property dates.
- * Allows users to view date information and click on individual dates
- * to edit their price and environmental rate settings.
+ * Calendar panel for displaying property availability during booking process.
+ * Shows which dates are available, booked, or selected for the current booking.
+ * Unlike CalendarGridPanel, this panel is read-only and highlights the selected date range.
  */
-public class CalendarGridPanel extends JPanel {
+public class BookingCalendarPanel extends JPanel {
 
     private Property property;
     private JButton[][] dayButtons;
+    private int selectedCheckIn = -1;
+    private int selectedCheckOut = -1;
     private static final int COLUMNS = 7;
     private static final int ROWS = 5;
 
     /**
-     * Constructs a CalendarGridPanel for the specified property.
-     * Creates a 7x5 grid of day buttons with color-coded availability status
-     * and a legend explaining the color scheme.
+     * Constructs a BookingCalendarPanel for the specified property.
      *
-     * @param property the property whose calendar is displayed
+     * @param property the property whose availability calendar is displayed
      */
-    public CalendarGridPanel(Property property) {
+    public BookingCalendarPanel(Property property) {
         this.property = property;
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Add legend panel at the top to explain color coding
+        // Add legend panel at the top
         JPanel legendPanel = createLegend();
         add(legendPanel, BorderLayout.NORTH);
 
-        // Create the main calendar grid with 7 columns and 5 rows
+        // Create the calendar grid
         JPanel gridPanel = new JPanel(new GridLayout(ROWS, COLUMNS, 5, 5));
         gridPanel.setBackground(Color.WHITE);
         dayButtons = new JButton[ROWS][COLUMNS];
 
-        // Populate the grid with day buttons (days 1-30)
+        // Populate grid with day buttons (days 1-30)
         int day = 1;
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLUMNS; col++) {
@@ -48,7 +48,7 @@ public class CalendarGridPanel extends JPanel {
                     gridPanel.add(dayButton);
                     day++;
                 } else {
-                    // Fill remaining grid cells with disabled buttons
+                    // Fill remaining cells with disabled empty buttons
                     JButton emptyButton = new JButton();
                     emptyButton.setEnabled(false);
                     emptyButton.setBackground(Color.LIGHT_GRAY);
@@ -61,9 +61,9 @@ public class CalendarGridPanel extends JPanel {
     }
 
     /**
-     * Creates the legend panel that explains color coding.
+     * Creates the legend panel showing what each color represents.
      *
-     * @return a JPanel containing colored boxes with labels
+     * @return a JPanel containing the color legend
      */
     private JPanel createLegend() {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -74,15 +74,16 @@ public class CalendarGridPanel extends JPanel {
         panel.add(createLegendBox(Color.WHITE, "Standard (100%)"));
         panel.add(createLegendBox(new Color(255, 255, 153), "Increased (>100%)"));
         panel.add(createLegendBox(new Color(255, 182, 193), "Booked"));
+        panel.add(createLegendBox(new Color(173, 216, 230), "Selected"));
         panel.add(createLegendBox(Color.LIGHT_GRAY, "Not Listed"));
 
         return panel;
     }
 
     /**
-     * Creates a single legend item showing a color box and its meaning.
+     * Creates a single legend box showing a color and its label.
      *
-     * @param color the background color for the legend box
+     * @param color the color to display in the box
      * @param label the text description of what the color represents
      * @return a JPanel containing the colored box and label
      */
@@ -90,6 +91,7 @@ public class CalendarGridPanel extends JPanel {
         JPanel box = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         box.setBackground(Color.WHITE);
 
+        // Create colored label with border
         JLabel colorLabel = new JLabel("   ");
         colorLabel.setOpaque(true);
         colorLabel.setBackground(color);
@@ -103,117 +105,101 @@ public class CalendarGridPanel extends JPanel {
 
     /**
      * Creates a button representing a single day in the calendar.
-     * The button is clickable and opens an edit dialog when clicked.
      *
      * @param day the day number (1-30)
-     * @return a JButton configured to display and edit the day's information
+     * @return a JButton configured to display the day's information
      */
     private JButton createDayButton(int day) {
         Date date = property.getDateByDay(day);
         JButton button = new JButton();
-        button.setPreferredSize(new Dimension(120, 80));
+        button.setPreferredSize(new Dimension(100, 70));
         button.setFocusPainted(false);
+        button.setEnabled(false); // Read-only calendar
 
         if (date == null) {
-            // Date not listed in this property - show as unavailable
+            // Day not listed in property
             button.setText("<html><center>Day " + day + "<br>N/A</center></html>");
             button.setBackground(Color.LIGHT_GRAY);
-            button.setEnabled(false);
         } else {
-            // Date exists - make it editable
             updateButtonDisplay(button, day, date);
-            button.addActionListener(e -> editDate(day));
         }
 
         return button;
     }
 
     /**
-     * Updates the display of a day button with current pricing and status.
-     * Sets the button text and background color based on environmental rate and booking status.
+     * Updates a day button's display with current price and availability information.
      *
      * @param button the button to update
      * @param day the day number this button represents
-     * @param date the Date object containing price and availability data
+     * @param date the Date object containing pricing and availability data
      */
     private void updateButtonDisplay(JButton button, int day, Date date) {
+        // Calculate final price including property type multiplier and environmental rate
         double multiplier = property.getType().getMultiplier();
         double finalPrice = date.getFinalPrice(multiplier);
         int percent = (int)(date.getEnvironmentalRate() * 100);
 
         String status = date.isAvailable() ? "Available" : "BOOKED";
 
-        // Display day number, final price, environmental percentage, and booking status
+        // Set button text with day number, price, percentage, and status
         button.setText(String.format("<html><center><b>Day %d</b><br>₱%.0f<br>%d%%<br>%s</center></html>",
                 day, finalPrice, percent, status));
 
-        // Color-code the button based on booking status and environmental rate
-        if (!date.isAvailable()) {
-            // Booked dates shown in light red/pink
+        // Determine background color based on selection, booking status, and environmental rate
+        if (isInSelectedRange(day)) {
+            // Highlight selected dates in light blue
+            button.setBackground(new Color(173, 216, 230));
+        } else if (!date.isAvailable()) {
+            // Booked dates in light red
             button.setBackground(new Color(255, 182, 193));
         } else if (percent < 100) {
-            // Reduced environmental impact (<100%) shown in light green
+            // Reduced environmental impact in light green
             button.setBackground(new Color(144, 238, 144));
         } else if (percent > 100) {
-            // Increased environmental impact (>100%) shown in light yellow
+            // Increased environmental impact in light yellow
             button.setBackground(new Color(255, 255, 153));
         } else {
-            // Standard rate (100%) shown in white
+            // Standard rate in white
             button.setBackground(Color.WHITE);
         }
-
-        button.setEnabled(true);
     }
 
     /**
-     * Opens the date edit dialog for the specified day.
-     * Refreshes the button display if changes were made.
+     * Checks if a given day falls within the currently selected date range.
      *
-     * @param day the day number to edit
+     * @param day the day to check
+     * @return true if the day is in the selected range; false otherwise
      */
-    private void editDate(int day) {
-        Date date = property.getDateByDay(day);
-        if (date == null) return;
-
-        // Open the edit dialog
-        DateEditDialog dialog = new DateEditDialog((Frame) SwingUtilities.getWindowAncestor(this),
-                property, day, date);
-        dialog.setVisible(true);
-
-        // If the user made changes, refresh the button to show updated values
-        if (dialog.isUpdated()) {
-            refreshDay(day);
+    private boolean isInSelectedRange(int day) {
+        if (selectedCheckIn < 0 || selectedCheckOut < 0) {
+            return false;
         }
+        return day >= selectedCheckIn && day < selectedCheckOut;
     }
 
     /**
-     * Refreshes the display of a single day button.
-     * Called after a date has been edited to show the updated information.
+     * Sets the selected date range and updates the calendar display.
+     * Days within the range will be highlighted in light blue.
      *
-     * @param day the day number to refresh
+     * @param checkIn the check-in day (start of range)
+     * @param checkOut the check-out day (end of range, exclusive)
      */
-    private void refreshDay(int day) {
-        // Calculate the button's position in the grid
-        int row = (day - 1) / COLUMNS;
-        int col = (day - 1) % COLUMNS;
+    public void setSelectedRange(int checkIn, int checkOut) {
+        this.selectedCheckIn = checkIn;
+        this.selectedCheckOut = checkOut;
 
-        // Update the button if it's within grid bounds
-        if (row < ROWS && col < COLUMNS) {
-            JButton button = dayButtons[row][col];
-            Date date = property.getDateByDay(day);
-            if (date != null) {
-                updateButtonDisplay(button, day, date);
-            }
-        }
+        // Refresh all day buttons to show the new selection
+        refreshAll();
     }
 
     /**
      * Refreshes the display of all day buttons in the calendar.
-     * Called when bulk operations change multiple dates at once.
+     * Called when the selected date range changes.
      */
-    public void refreshAll() {
+    private void refreshAll() {
         int day = 1;
-        // Iterate through all rows and columns in the grid
+        // Iterate through all rows and columns
         for (int row = 0; row < ROWS; row++) {
             for (int col = 0; col < COLUMNS; col++) {
                 if (day <= 30) {
