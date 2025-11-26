@@ -29,32 +29,32 @@ public class PropertySystem {
      * Creates two sample properties for demonstration and testing.
      */
     private void seedSampleProperties() {
-        Property p1 = new Property("Grand Residences", PropertyType.ECO_APARTMENT);
+        Property p1 = new Property("Grand Residences", PropertyType.fromChoice(1));
         for (int d = 1; d <= 30; d++) p1.addDate(new Date(d));
         properties.add(p1);
         reservationsPerProperty.add(new ArrayList<Reservation>());
 
 
-        Property p2 = new Property("Arasaka Tower", PropertyType.SUSTAINABLE_HOUSE);
+        Property p2 = new Property("Arasaka Tower", PropertyType.fromChoice(2));
         for (int d = 1; d <= 15; d++) p2.addDate(new Date(d));
         for (int d = 21; d <= 25; d++) p2.addDate(new Date(d));
         properties.add(p2);
         reservationsPerProperty.add(new ArrayList<Reservation>());
 
 
-        Property p3 = new Property("Bolinao Reservations", PropertyType.GREEN_RESORT);
+        Property p3 = new Property("Bolinao Reservations", PropertyType.fromChoice(3));
         for (int d = 10; d <= 20; d++) p3.addDate(new Date(d));
         properties.add(p3);
         reservationsPerProperty.add(new ArrayList<Reservation>());
 
 
-        Property p4 = new Property("Sunset Retreat", PropertyType.ECO_GLAMPING);
+        Property p4 = new Property("Sunset Retreat", PropertyType.fromChoice(4));
         for (int d = 5; d <= 25; d++) p4.addDate(new Date(d));
         properties.add(p4);
         reservationsPerProperty.add(new ArrayList<Reservation>());
 
 
-        Property p5 = new Property("Mountain Edge", PropertyType.SUSTAINABLE_HOUSE);
+        Property p5 = new Property("Mountain Edge", PropertyType.fromChoice(2));
         for (int d = 1; d <= 10; d++) p5.addDate(new Date(d));
         for (int d = 18; d <= 28; d++) p5.addDate(new Date(d));
         properties.add(p5);
@@ -496,5 +496,3 @@ public class PropertySystem {
         return true;
     }
 }
-
-

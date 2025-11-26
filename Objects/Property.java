@@ -24,7 +24,7 @@ public class Property {
      * @param name the name of the property
      */
     public Property(String name) {
-        this(name, PropertyType.ECO_APARTMENT);
+        this(name, PropertyType.fromChoice(1));
     }
 
     /**
