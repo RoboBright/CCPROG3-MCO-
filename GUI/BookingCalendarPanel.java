@@ -114,7 +114,12 @@ public class BookingCalendarPanel extends JPanel {
         JButton button = new JButton();
         button.setPreferredSize(new Dimension(100, 70));
         button.setFocusPainted(false);
-        button.setEnabled(false); // Read-only calendar
+
+        // Keep button enabled but make it non-interactive
+        button.setEnabled(true);
+        button.setFocusable(false);
+        // Remove all action listeners to prevent clicks
+        button.setBorderPainted(true);
 
         if (date == null) {
             // Day not listed in property
