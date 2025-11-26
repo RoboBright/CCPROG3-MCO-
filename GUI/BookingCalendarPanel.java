@@ -120,6 +120,7 @@ public class BookingCalendarPanel extends JPanel {
             // Day not listed in property
             button.setText("<html><center>Day " + day + "<br>N/A</center></html>");
             button.setBackground(Color.LIGHT_GRAY);
+            button.setForeground(Color.BLACK);
         } else {
             updateButtonDisplay(button, day, date);
         }
@@ -145,6 +146,9 @@ public class BookingCalendarPanel extends JPanel {
         // Set button text with day number, price, percentage, and status
         button.setText(String.format("<html><center><b>Day %d</b><br>₱%.0f<br>%d%%<br>%s</center></html>",
                 day, finalPrice, percent, status));
+
+        // Set text color to black for better visibility
+        button.setForeground(Color.BLACK);
 
         // Determine background color based on selection, booking status, and environmental rate
         if (isInSelectedRange(day)) {

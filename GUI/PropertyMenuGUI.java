@@ -8,6 +8,7 @@ import Objects.Property;
 /**
  * GUI dialog for property management operations.
  * Provides options to create new properties, view property details, or manage existing properties.
+ * Acts as the main navigation hub for all property-related functionality.
  */
 public class PropertyMenuGUI extends JDialog {
 
@@ -15,6 +16,7 @@ public class PropertyMenuGUI extends JDialog {
 
     /**
      * Constructs the PropertyMenuGUI dialog with options for property operations.
+     * Creates a modal dialog with buttons for creating, viewing, and managing properties.
      *
      * @param parent the parent frame that launched this dialog
      * @param system the PropertySystem containing property data and operations
@@ -44,17 +46,20 @@ public class PropertyMenuGUI extends JDialog {
         // Create Property button opens a dialog to create a new property
         JButton createBtn = createMenuButton("Create Property");
         createBtn.addActionListener(e -> openCreateProperty());
+
         // View Property button allows viewing details of a selected property
         JButton viewBtn = createMenuButton("View Property");
         viewBtn.addActionListener(e -> openViewProperty());
+
         // Manage Property button allows managing settings of a selected property
         JButton manageBtn = createMenuButton("Manage Property");
         manageBtn.addActionListener(e -> openManageProperty());
-        // Back button closes this dialog
+
+        // Back button closes this dialog and returns to main menu
         JButton backBtn = createMenuButton("Back");
         backBtn.addActionListener(e -> dispose());
 
-        // Add buttons to the panel
+        // Add buttons to the panel in order
         buttonPanel.add(createBtn);
         buttonPanel.add(viewBtn);
         buttonPanel.add(manageBtn);
@@ -66,9 +71,10 @@ public class PropertyMenuGUI extends JDialog {
 
     /**
      * Creates a menu button with standard styling for the property menu.
+     * All buttons share consistent appearance and behavior.
      *
      * @param text the text label of the button
-     * @return a JButton styled for the menu
+     * @return a JButton styled for the menu with blue background and white text
      */
     private JButton createMenuButton(String text) {
         JButton button = new JButton(text);
@@ -82,6 +88,7 @@ public class PropertyMenuGUI extends JDialog {
 
     /**
      * Opens the CreatePropertyDialog to add a new property.
+     * Launches a modal dialog for entering property details.
      */
     private void openCreateProperty() {
         CreatePropertyDialog dialog = new CreatePropertyDialog(this, system);
@@ -90,10 +97,14 @@ public class PropertyMenuGUI extends JDialog {
 
     /**
      * Opens the ViewPropertyDialog to display information about a selected property.
-     * It first prompts the user to select a property and then shows the dialog if a valid property is chosen.
+     * First prompts the user to select a property, then shows detailed information.
+     * If no property is selected or available, the operation is cancelled.
      */
     private void openViewProperty() {
+        // Prompt user to select a property
         int propertyIndex = selectProperty("View Property");
+
+        // Only proceed if a valid property was selected
         if (propertyIndex >= 0) {
             ViewPropertyDialog dialog = new ViewPropertyDialog(this, system, propertyIndex);
             dialog.setVisible(true);
@@ -102,10 +113,14 @@ public class PropertyMenuGUI extends JDialog {
 
     /**
      * Opens the ManagePropertyDialog to modify settings of a selected property.
-     * It first prompts the user to select a property and then shows the management dialog if a valid property is chosen.
+     * First prompts the user to select a property, then shows management options.
+     * If no property is selected or available, the operation is cancelled.
      */
     private void openManageProperty() {
+        // Prompt user to select a property
         int propertyIndex = selectProperty("Manage Property");
+
+        // Only proceed if a valid property was selected
         if (propertyIndex >= 0) {
             ManagePropertyDialog dialog = new ManagePropertyDialog(this, system, propertyIndex);
             dialog.setVisible(true);
@@ -114,9 +129,10 @@ public class PropertyMenuGUI extends JDialog {
 
     /**
      * Displays a dialog prompting the user to select a property from the system.
+     * Shows a dropdown list of all properties with their names and types.
      *
      * @param title the title for the selection dialog window
-     * @return the index of the selected property, or -1 if the selection was cancelled or none is available
+     * @return the index of the selected property, or -1 if cancelled or no properties exist
      */
     private int selectProperty(String title) {
         int count = system.getPropertyCount();
@@ -132,6 +148,7 @@ public class PropertyMenuGUI extends JDialog {
         String[] propertyNames = new String[count];
         for (int i = 0; i < count; i++) {
             Property p = system.getProperty(i);
+            // Format: "1) Property Name (Property Type)"
             propertyNames[i] = (i + 1) + ") " + p.getName() + " (" + p.getType().getDisplayName() + ")";
         }
 

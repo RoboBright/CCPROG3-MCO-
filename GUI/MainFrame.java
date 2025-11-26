@@ -7,6 +7,7 @@ import System.PropertySystem;
 /**
  * The main window for the Green Property Exchange System GUI.
  * Contains the main menu with buttons to access Property and Booking sections.
+ * Serves as the entry point for the entire application interface.
  */
 public class MainFrame extends JFrame {
 
@@ -15,7 +16,8 @@ public class MainFrame extends JFrame {
 
     /**
      * Constructs the MainFrame and initializes the GUI components.
-     * It also sets up the main menu for property and booking management.
+     * Sets up the main menu for property and booking management.
+     * Initializes the PropertySystem with sample data.
      */
     public MainFrame() {
         // Initialize core system logic
@@ -44,14 +46,16 @@ public class MainFrame extends JFrame {
 
     /**
      * Creates the header panel with a title label.
+     * Uses a green background to represent the eco-friendly theme.
      *
-     * @return the JPanel containing the header content
+     * @return a JPanel containing the header content with title
      */
     private JPanel createHeader() {
         JPanel header = new JPanel();
         header.setBackground(new Color(34, 139, 34));
         header.setPreferredSize(new Dimension(getWidth(), 80));
 
+        // Create and style the main title label
         JLabel titleLabel = new JLabel("🏡 GREEN PROPERTY EXCHANGE SYSTEM");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 28));
         titleLabel.setForeground(Color.WHITE);
@@ -61,10 +65,10 @@ public class MainFrame extends JFrame {
     }
 
     /**
-     * Creates the main menu panel with buttons for navigating to Property and Booking sections,
-     * as well as an option to exit the application.
+     * Creates the main menu panel with buttons for navigating to Property and Booking sections.
+     * Also includes an exit button with confirmation dialog.
      *
-     * @return the JPanel containing the main menu buttons and welcome message
+     * @return a JPanel containing the main menu buttons and welcome message
      */
     private JPanel createMenuPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
@@ -72,7 +76,7 @@ public class MainFrame extends JFrame {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(20, 20, 20, 20);
 
-        // Welcome message label
+        // Welcome message label at the top
         JLabel welcomeLabel = new JLabel("Welcome! Please select an option:");
         welcomeLabel.setFont(new Font("Arial", Font.PLAIN, 18));
         gbc.gridx = 0;
@@ -96,6 +100,7 @@ public class MainFrame extends JFrame {
         // Exit button to close the application
         JButton exitBtn = createStyledButton("Exit", new Color(220, 20, 60));
         exitBtn.addActionListener(e -> {
+            // Confirm before exiting the application
             int result = JOptionPane.showConfirmDialog(this,
                     "Are you sure you want to exit?",
                     "Exit Confirmation",
@@ -114,10 +119,11 @@ public class MainFrame extends JFrame {
 
     /**
      * Creates a JButton with standardized style and hover effects.
+     * Buttons have a raised bevel border and change color on mouse hover.
      *
-     * @param text   the text label for the button
+     * @param text the text label for the button
      * @param bgColor the background color of the button (base color for hover effect)
-     * @return the styled JButton component
+     * @return a styled JButton component with hover functionality
      */
     private JButton createStyledButton(String text, Color bgColor) {
         JButton button = new JButton(text);
@@ -131,9 +137,20 @@ public class MainFrame extends JFrame {
 
         // Add a hover color effect on the button
         button.addMouseListener(new java.awt.event.MouseAdapter() {
+            /**
+             * Brightens the button color when mouse enters.
+             *
+             * @param evt the mouse event
+             */
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(bgColor.brighter());
             }
+
+            /**
+             * Restores the original button color when mouse exits.
+             *
+             * @param evt the mouse event
+             */
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 button.setBackground(bgColor);
             }
@@ -144,7 +161,7 @@ public class MainFrame extends JFrame {
 
     /**
      * Opens the Property Menu dialog for managing properties.
-     * This method invokes the PropertyMenuGUI dialog and displays it.
+     * Launches the PropertyMenuGUI as a modal dialog.
      */
     private void openPropertyMenu() {
         PropertyMenuGUI propertyMenu = new PropertyMenuGUI(this, system);
@@ -153,7 +170,7 @@ public class MainFrame extends JFrame {
 
     /**
      * Opens the Booking Menu dialog for managing reservations.
-     * This method invokes the BookingMenuGUI dialog and displays it.
+     * Launches the BookingMenuGUI as a modal dialog.
      */
     private void openBookingMenu() {
         BookingMenuGUI bookingMenu = new BookingMenuGUI(this, system);
@@ -162,6 +179,7 @@ public class MainFrame extends JFrame {
 
     /**
      * The entry point of the application, launching the main GUI window.
+     * Ensures the GUI is created on the Event Dispatch Thread.
      *
      * @param args the command-line arguments (unused)
      */
